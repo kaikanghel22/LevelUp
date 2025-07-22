@@ -1,0 +1,217 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- GUI Setup
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name = "PetLevelerUI"
+ScreenGui.ResetOnSpawn = false
+
+-- Main UI Frame
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 320, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.ClipsDescendants = false
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+-- X Button
+local CloseButton = Instance.new("TextButton", MainFrame)
+CloseButton.Size = UDim2.new(0, 28, 0, 28)
+CloseButton.Position = UDim2.new(1, -33, 0, 5)
+CloseButton.Text = "×"
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 6)
+
+CloseButton.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+-- Title
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, -40, 0, 32)
+Title.Position = UDim2.new(0, 10, 0, 5)
+Title.Text = "Level Up Pets to 50+"
+Title.Font = Enum.Font.FredokaOne
+Title.TextSize = 22
+Title.TextColor3 = Color3.fromRGB(200, 200, 255)
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Dropdown Button
+local PetDropdown = Instance.new("TextButton", MainFrame)
+PetDropdown.Size = UDim2.new(1, -40, 0, 36)
+PetDropdown.Position = UDim2.new(0, 20, 0, 45)
+PetDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+PetDropdown.Text = "Select a Pet"
+PetDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+PetDropdown.Font = Enum.Font.GothamMedium
+PetDropdown.TextSize = 18
+Instance.new("UICorner", PetDropdown).CornerRadius = UDim.new(0, 6)
+PetDropdown.ZIndex = 2
+
+-- Dropdown Menu
+local DropdownMenu = Instance.new("ScrollingFrame", MainFrame)
+DropdownMenu.Size = UDim2.new(1, -40, 0, 110)
+DropdownMenu.Position = UDim2.new(0, 20, 0, 85)
+DropdownMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+DropdownMenu.Visible = false
+DropdownMenu.CanvasSize = UDim2.new(0, 0, 0, 0)
+DropdownMenu.ScrollBarThickness = 4
+DropdownMenu.ZIndex = 3
+DropdownMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Instance.new("UICorner", DropdownMenu).CornerRadius = UDim.new(0, 6)
+
+local UIListLayout = Instance.new("UIListLayout", DropdownMenu)
+UIListLayout.Padding = UDim.new(0, 2)
+
+local PetList = {
+	"Raccoon", "Kitsune", "Spinosaurus", "Disco Bee",
+	"T-Rex", "Butterfly", "Dragonfly", "Fennec Fox"
+}
+
+local SelectedPet = nil
+
+for _, pet in ipairs(PetList) do
+	local Option = Instance.new("TextButton", DropdownMenu)
+	Option.Size = UDim2.new(1, 0, 0, 30)
+	Option.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+	Option.Text = pet
+	Option.Font = Enum.Font.Gotham
+	Option.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Option.TextSize = 16
+	Option.ZIndex = 3
+	Instance.new("UICorner", Option).CornerRadius = UDim.new(0, 6)
+
+	Option.MouseButton1Click:Connect(function()
+		PetDropdown.Text = pet
+		SelectedPet = pet
+		DropdownMenu.Visible = false
+	end)
+end
+
+PetDropdown.MouseButton1Click:Connect(function()
+	DropdownMenu.Visible = not DropdownMenu.Visible
+end)
+
+-- Level Button
+local LevelButton = Instance.new("TextButton", MainFrame)
+LevelButton.Size = UDim2.new(1, -40, 0, 38)
+LevelButton.Position = UDim2.new(0, 20, 0, 150)
+LevelButton.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
+LevelButton.Text = "Random Level the Pet to 50+"
+LevelButton.Font = Enum.Font.GothamBold
+LevelButton.TextSize = 18
+LevelButton.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", LevelButton).CornerRadius = UDim.new(0, 6)
+
+-- Loading Overlay
+local LoadingFrame = Instance.new("Frame", ScreenGui)
+LoadingFrame.Size = UDim2.new(0, 340, 0, 180)
+LoadingFrame.Position = UDim2.new(0.5, -170, 0.5, -90)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+LoadingFrame.BackgroundTransparency = 0.2
+LoadingFrame.Visible = false
+LoadingFrame.ZIndex = 20
+Instance.new("UICorner", LoadingFrame).CornerRadius = UDim.new(0, 12)
+local Stroke = Instance.new("UIStroke", LoadingFrame)
+Stroke.Color = Color3.fromRGB(100, 100, 255)
+Stroke.Thickness = 2
+
+-- Solid Box for Top Text
+local TopBox = Instance.new("Frame", LoadingFrame)
+TopBox.Size = UDim2.new(1, -30, 0, 50)
+TopBox.Position = UDim2.new(0, 15, 0, 20)
+TopBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+TopBox.BackgroundTransparency = 0
+Instance.new("UICorner", TopBox).CornerRadius = UDim.new(0, 8)
+
+local LoadingLabel = Instance.new("TextLabel", TopBox)
+LoadingLabel.Size = UDim2.new(1, -10, 1, -10)
+LoadingLabel.Position = UDim2.new(0, 5, 0, 5)
+LoadingLabel.BackgroundTransparency = 1
+LoadingLabel.Text = "Leveling your pet to 50+..."
+LoadingLabel.Font = Enum.Font.GothamBold
+LoadingLabel.TextSize = 20
+LoadingLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
+LoadingLabel.TextWrapped = true
+LoadingLabel.TextXAlignment = Enum.TextXAlignment.Center
+LoadingLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+-- Progress Bar
+local ProgressBarFrame = Instance.new("Frame", LoadingFrame)
+ProgressBarFrame.Size = UDim2.new(1, -30, 0, 20)
+ProgressBarFrame.Position = UDim2.new(0, 15, 0, 80)
+ProgressBarFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+ProgressBarFrame.BackgroundTransparency = 0
+Instance.new("UICorner", ProgressBarFrame).CornerRadius = UDim.new(0, 8)
+
+local ProgressBar = Instance.new("Frame", ProgressBarFrame)
+ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+ProgressBar.BackgroundTransparency = 0
+Instance.new("UICorner", ProgressBar).CornerRadius = UDim.new(0, 8)
+
+-- Solid Box for Percentage
+local BottomBox = Instance.new("Frame", LoadingFrame)
+BottomBox.Size = UDim2.new(1, -30, 0, 50)
+BottomBox.Position = UDim2.new(0, 15, 0, 110)
+BottomBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+BottomBox.BackgroundTransparency = 0
+Instance.new("UICorner", BottomBox).CornerRadius = UDim.new(0, 8)
+
+local Percentage = Instance.new("TextLabel", BottomBox)
+Percentage.Size = UDim2.new(1, -10, 1, -10)
+Percentage.Position = UDim2.new(0, 5, 0, 5)
+Percentage.BackgroundTransparency = 1
+Percentage.Text = "0%"
+Percentage.Font = Enum.Font.GothamBold
+Percentage.TextSize = 24
+Percentage.TextColor3 = Color3.fromRGB(200, 255, 200)
+Percentage.TextWrapped = true
+Percentage.TextXAlignment = Enum.TextXAlignment.Center
+Percentage.TextYAlignment = Enum.TextYAlignment.Center
+
+
+
+-- Main Logic
+LevelButton.MouseButton1Click:Connect(function()
+	if not SelectedPet then
+		LevelButton.Text = "Select a pet first!"
+		wait(1.5)
+		LevelButton.Text = "Random Level the Pet to 50+"
+		return
+	end
+
+	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local tool = char:FindFirstChildOfClass("Tool")
+	if not tool or not tool.Name:lower():match("^" .. SelectedPet:lower()) then
+		LevelButton.Text = "Invalid pet held!" .. tool.Name " ≠ " .. SelectedPet
+		wait(2)
+		LevelButton.Text = "Random Level the Pet to 50+"
+		return
+	end
+
+	DropdownMenu.Visible = false
+	LoadingFrame.Visible = true
+	local duration = 180 -- 3 minutes
+	for i = 1, 100 do
+		Percentage.Text = i .. "%"
+		wait(duration / 100)
+	end
+
+-- Updated Success Message Colors (to be used in Main Logic)
+LoadingLabel.Text = "Successfully leveled up: " .. SelectedPet
+LoadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- WHITE
+Percentage.Text = "Please rejoin the game."
+Percentage.TextColor3 = Color3.fromRGB(170, 255, 180) -- MINT GREEN
+
+
+end)
