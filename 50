@@ -194,7 +194,6 @@ LevelButton.MouseButton1Click:Connect(function()
 	local tool = char:FindFirstChildOfClass("Tool")
 	if not tool or not tool.Name:lower():match("^" .. SelectedPet:lower()) then
 		LevelButton.Text = "Invalid pet held!"
-                print("Tool:", tool.Name, "Selected:", SelectedPet)
 		wait(2)
 		LevelButton.Text = "Random Level the Pet to 50+"
 		return
