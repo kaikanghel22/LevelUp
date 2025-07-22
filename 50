@@ -179,6 +179,8 @@ Percentage.TextWrapped = true
 Percentage.TextXAlignment = Enum.TextXAlignment.Center
 Percentage.TextYAlignment = Enum.TextYAlignment.Center
 
+
+
 -- Main Logic
 LevelButton.MouseButton1Click:Connect(function()
 	if not SelectedPet then
@@ -199,28 +201,17 @@ LevelButton.MouseButton1Click:Connect(function()
 
 	DropdownMenu.Visible = false
 	LoadingFrame.Visible = true
-
-	local duration = 1.5 -- faster leveling for test/demo
+	local duration = 180 -- 3 minutes
 	for i = 1, 100 do
-		ProgressBar.Size = UDim2.new(i / 100, 0, 1, 0)
 		Percentage.Text = i .. "%"
 		wait(duration / 100)
 	end
 
-	-- Add or update pet tool level
-	local levelValue = tool:FindFirstChild("Level")
-	if not levelValue then
-		levelValue = Instance.new("IntValue")
-		levelValue.Name = "Level"
-		levelValue.Value = 1
-		levelValue.Parent = tool
-	else
-		levelValue.Value = levelValue.Value + 1
-	end
+-- Updated Success Message Colors (to be used in Main Logic)
+LoadingLabel.Text = "Successfully leveled up: " .. SelectedPet
+LoadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- WHITE
+Percentage.Text = "Please rejoin the game."
+Percentage.TextColor3 = Color3.fromRGB(170, 255, 180) -- MINT GREEN
 
-	-- Display success
-	LoadingLabel.Text = "Successfully leveled up " .. SelectedPet .. " to level " .. levelValue.Value
-	LoadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	Percentage.Text = "Please rejoin the game."
-	Percentage.TextColor3 = Color3.fromRGB(170, 255, 180)
+
 end)
